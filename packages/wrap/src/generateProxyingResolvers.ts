@@ -1,6 +1,6 @@
 import { GraphQLSchema, GraphQLFieldResolver, GraphQLObjectType, GraphQLResolveInfo } from 'graphql';
 
-import { Transform, Operation, getResponseKeyFromInfo, getErrors, applySchemaTransforms } from '@graphql-tools/utils';
+import { Operation, getResponseKeyFromInfo, getErrors } from '@graphql-tools/utils';
 import {
   delegateToSchema,
   getSubschema,
@@ -9,6 +9,9 @@ import {
   isSubschemaConfig,
   CreateProxyingResolverFn,
   ICreateProxyingResolverOptions,
+  Transform,
+  applySchemaTransforms,
+  getTransformedSchemas,
 } from '@graphql-tools/delegate';
 
 export function generateProxyingResolvers(
@@ -35,6 +38,7 @@ export function generateProxyingResolvers(
   }
 
   const transformedSchema = applySchemaTransforms(targetSchema, schemaTransforms);
+  const transformedSchemas = getTransformedSchemas(targetSchema, schemaTransforms);
 
   const operationTypes: Record<Operation, GraphQLObjectType> = {
     query: targetSchema.getQueryType(),
@@ -55,6 +59,7 @@ export function generateProxyingResolvers(
           schema: subschemaOrSubschemaConfig,
           transforms,
           transformedSchema,
+          transformedSchemas,
           operation,
           fieldName,
         });
@@ -109,6 +114,7 @@ export function defaultCreateProxyingResolver({
   schema,
   transforms,
   transformedSchema,
+  transformedSchemas,
 }: ICreateProxyingResolverOptions): GraphQLFieldResolver<any, any> {
   return (_parent, _args, context, info) =>
     delegateToSchema({
@@ -117,5 +123,6 @@ export function defaultCreateProxyingResolver({
       info,
       transforms,
       transformedSchema,
+      transformedSchemas,
     });
 }

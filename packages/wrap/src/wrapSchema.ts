@@ -6,9 +6,16 @@ import {
   GraphQLFieldResolver,
 } from 'graphql';
 
-import { Transform, MapperKind, mapSchema, applySchemaTransforms } from '@graphql-tools/utils';
+import { MapperKind, mapSchema } from '@graphql-tools/utils';
 
-import { SubschemaConfig, isSubschemaConfig, defaultMergedResolver } from '@graphql-tools/delegate';
+import {
+  SubschemaConfig,
+  isSubschemaConfig,
+  defaultMergedResolver,
+  Transform,
+  applySchemaTransforms,
+} from '@graphql-tools/delegate';
+
 import { generateProxyingResolvers } from './generateProxyingResolvers';
 
 export function wrapSchema(

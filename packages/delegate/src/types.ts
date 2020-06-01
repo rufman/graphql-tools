@@ -10,8 +10,10 @@ import {
   FragmentDefinitionNode,
   GraphQLObjectType,
   VariableDefinitionNode,
+  OperationTypeNode,
 } from 'graphql';
-import { Operation, Transform, Request, TypeMap, ExecutionResult } from '@graphql-tools/utils';
+
+import { Operation, Request, TypeMap, ExecutionResult } from '@graphql-tools/utils';
 
 export interface IDelegateToSchemaOptions<TContext = Record<string, any>, TArgs = Record<string, any>> {
   schema: GraphQLSchema | SubschemaConfig;
@@ -26,6 +28,7 @@ export interface IDelegateToSchemaOptions<TContext = Record<string, any>, TArgs 
   rootValue?: Record<string, any>;
   transforms?: Array<Transform>;
   transformedSchema?: GraphQLSchema;
+  transformedSchemas?: Array<GraphQLSchema>;
   skipValidation?: boolean;
   skipTypeMerging?: boolean;
 }
@@ -92,6 +95,7 @@ export interface ICreateProxyingResolverOptions {
   schema: GraphQLSchema | SubschemaConfig;
   transforms?: Array<Transform>;
   transformedSchema?: GraphQLSchema;
+  transformedSchemas?: Array<GraphQLSchema>;
   operation?: Operation;
   fieldName?: string;
 }
@@ -133,4 +137,45 @@ export interface StitchingInfo {
   selectionSetsByField: Record<string, Record<string, SelectionSetNode>>;
   selectionSetsByType: Record<string, SelectionSetNode>;
   mergedTypes: Record<string, MergedTypeInfo>;
+}
+
+export interface DelegationContext {
+  subschema: GraphQLSchema | SubschemaConfig;
+  targetSchema: GraphQLSchema;
+  operation: OperationTypeNode;
+  fieldName: string;
+  args: Record<string, any>;
+  context: Record<string, any>;
+  info: GraphQLResolveInfo;
+  stitchingInfo: StitchingInfo;
+  returnType: GraphQLOutputType;
+  transforms: Array<Transform>;
+  transformedSchema: GraphQLSchema;
+  transformedSchemas: Array<GraphQLSchema>;
+  skipTypeMerging: boolean;
+}
+
+export type TransformationContext = Record<string, any>;
+
+export interface Transformation {
+  transform: Transform;
+  context: TransformationContext;
+}
+
+export type SchemaTransform = (originalSchema: GraphQLSchema) => GraphQLSchema;
+export type RequestTransform = (
+  originalRequest: Request,
+  transformationContext: TransformationContext,
+  delegationContext: DelegationContext
+) => Request;
+export type ResultTransform = (
+  originalResult: ExecutionResult,
+  transformationContext: TransformationContext,
+  delegationContext: DelegationContext
+) => ExecutionResult;
+
+export interface Transform {
+  transformSchema?: SchemaTransform;
+  transformRequest?: RequestTransform;
+  transformResult?: ResultTransform;
 }
